@@ -1,59 +1,41 @@
 package bssend.expreval.node.binaryexpr;
 
-import bssend.expreval.exception.EvalException;
-import bssend.expreval.exception.TypeResolveException;
 import bssend.expreval.node.INode;
-import bssend.expreval.parser.Token;
+import bssend.expreval.compiler.Token;
+import bssend.expreval.scope.IScope;
 import bssend.expreval.type.Type;
-import bssend.expreval.value.BooleanValue;
-import bssend.expreval.value.InternalValue;
-import bssend.expreval.visitor.EvalVisitor;
-import bssend.expreval.visitor.TypeResolveVisitor;
+import bssend.expreval.value.Value;
+import bssend.expreval.visitor.IEvalVisitor;
+import bssend.expreval.visitor.ITypeResolveVisitor;
 import lombok.val;
 
-public class LteNode extends BinaryExprNode implements IBinaryExprNode {
+public class LteNode extends CompareExprNode implements IBinaryExprNode {
 
-    public LteNode(INode left, INode right, Token operatorToken) {
-        super(left, right, operatorToken);
+    public LteNode(INode left, INode right, Token token) {
+        super(left, right, token);
     }
 
     @Override
-    public InternalValue eval(EvalVisitor visitor) {
-        val v1 = this.getLeft().eval(visitor);
-        val v2 = this.getRight().eval(visitor);
+    public Value eval(IScope scope, IEvalVisitor visitor) {
 
-        if (Type.isInt(v1.getType()) && Type.isInt(v2.getType())) {
-            return new BooleanValue(v1.intValue() <= v2.intValue());
-        }
+        val value1 = this.getLeft().eval(scope, visitor);
+        val value2 = this.getRight().eval(scope, visitor);
 
-        if (Type.isIntOrNumber(v1.getType()) && Type.isIntOrNumber(v2.getType())) {
-            return new BooleanValue(v1.doubleValue() <= v2.doubleValue());
-        }
-
-        throw new EvalException(
-                String.format("operator is not supported type %s $s" ,
-                        v1.getType().toString() ,
-                        v2.getType().toString()));
+        return typeOf(value1, value2)
+                .ifInteger((v1, v2) -> v1 <= v2)
+                .ifNumber((v1, v2) -> v1 <= v2)
+                .dispatch();
     }
 
     @Override
-    public Type resolveType(TypeResolveVisitor visitor) {
-        val t1 = this.getLeft().resolveType(visitor);
-        val t2 = this.getRight().resolveType(visitor);
+    public Type resolveType(IScope scope, ITypeResolveVisitor visitor) {
 
-        if (Type.isInt(t1) && Type.isInt(t2)) {
-            this.setType(Type.BOOLEAN_TYPE);
-            return this.getType();
-        }
+        val type1 = this.getLeft().resolveType(scope, visitor);
+        val type2 = this.getRight().resolveType(scope, visitor);
 
-        if (Type.isIntOrNumber(t1) && Type.isIntOrNumber(t2)) {
-            this.setType(Type.BOOLEAN_TYPE);
-            return this.getType();
-        }
-
-        throw new TypeResolveException(
-                getOperatorToken(),
-                String.format("operator is not supported type %s $s"
-                        ,t1.toString() , t2.toString()));
+        return typeOf(type1, type2)
+                .ifInteger(() -> Type.BOOLEAN_TYPE)
+                .ifNumber(() -> Type.BOOLEAN_TYPE)
+                .dispatch();
     }
 }

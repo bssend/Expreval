@@ -1,16 +1,15 @@
 package bssend.expreval.node;
 
+import bssend.expreval.scope.IScope;
 import bssend.expreval.type.Type;
-import bssend.expreval.value.InternalValue;
-import bssend.expreval.visitor.TypeResolveVisitor;
-import bssend.expreval.visitor.EvalVisitor;
+import bssend.expreval.value.Value;
+import bssend.expreval.visitor.IEvalVisitor;
+import bssend.expreval.visitor.ITypeResolveVisitor;
 
 public interface INode {
     NodeType getNodeType();
-//    ValueType getValueType();
-//    void setValueType(ValueType valueType);
+    Type getType();
 
-//    <T> T accept(IVisitor<T> visitor);
-    InternalValue eval(EvalVisitor visitor);
-    Type resolveType(TypeResolveVisitor visitor);
+    Value eval(IScope scope, IEvalVisitor visitor);
+    Type resolveType(IScope scope, ITypeResolveVisitor visitor);
 }

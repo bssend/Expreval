@@ -1,9 +1,9 @@
 package bssend.expreval.value;
 
 import bssend.expreval.type.Type;
-import bssend.expreval.exception.CastNotSupportedException;
+import bssend.expreval.exception.ImplicitCastException;
 
-public class StringValue extends InternalValue {
+public class StringValue extends Value {
 
     private final String value;
 
@@ -24,17 +24,26 @@ public class StringValue extends InternalValue {
 
     @Override
     public int intValue() {
-        throw new CastNotSupportedException("String to int cast not supported.");
+        throw new ImplicitCastException(
+                String.format("%s to int Implicit cast not supported.",
+                    this.getType().toString()));
     }
 
     @Override
     public double doubleValue() {
-        throw new CastNotSupportedException("String to number cast not supported.");
+        throw new ImplicitCastException(
+                String.format("%s to double Implicit cast not supported.",
+                        this.getType().toString()));
     }
 
     @Override
     public boolean booleanValue() {
-        throw new CastNotSupportedException("String to boolean cast not supported.");
+        throw new ImplicitCastException(
+                String.format("%s to boolean Implicit cast not supported.",
+                        this.getType().toString()));
     }
 
+    public static StringValue ofString(String s) {
+        return new StringValue(s);
+    }
 }

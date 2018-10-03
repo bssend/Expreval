@@ -1,6 +1,6 @@
 package bssend.expreval.node;
 
-import bssend.expreval.parser.Token;
+import bssend.expreval.compiler.Token;
 import bssend.expreval.type.Type;
 import lombok.Getter;
 import lombok.Setter;

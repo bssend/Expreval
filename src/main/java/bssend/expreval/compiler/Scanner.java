@@ -1,8 +1,8 @@
-package bssend.expreval.parser;
+package bssend.expreval.compiler;
 
-import bssend.expreval.parser.util.IStringSequence;
-import bssend.expreval.parser.util.ITokenSequence;
-import bssend.expreval.parser.util.TokenSequence;
+import bssend.expreval.compiler.util.IStringSequence;
+import bssend.expreval.compiler.util.ITokenSequence;
+import bssend.expreval.compiler.util.TokenSequence;
 import lombok.NonNull;
 import lombok.var;
 
@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import static bssend.expreval.parser.TokenType.STRING;
-import static bssend.expreval.parser.TokenType.WHITESPACE;
+import static bssend.expreval.compiler.TokenType.STRING;
+import static bssend.expreval.compiler.TokenType.WHITESPACE;
 import static java.util.Comparator.comparing;
 
 public class Scanner implements IScanner {

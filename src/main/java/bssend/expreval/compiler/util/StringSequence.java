@@ -1,4 +1,4 @@
-package bssend.expreval.parser.util;
+package bssend.expreval.compiler.util;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -18,6 +18,7 @@ public class StringSequence implements IStringSequence{
         this.position = 0;
     }
 
+    @Override
     public int match(@NonNull final String pattern) {
         var matcher = Pattern.compile(pattern)
                 .matcher(source.substring(position));
@@ -28,16 +29,19 @@ public class StringSequence implements IStringSequence{
         return matcher.group(0).length();
     }
 
-    public String peek(int length) {
+    @Override
+    public String peek(final int length) {
         return source.substring(position, position + length);
     }
 
-    public String next(int length) {
+    @Override
+    public String next(final int length) {
         var result = source.substring(position, position + length);
         position = position + length;
         return result;
     }
 
+    @Override
     public boolean isEnd() {
         return position > source.length() - 1;
     }

@@ -1,6 +1,6 @@
 package bssend.expreval.exception;
 
-import bssend.expreval.parser.Token;
+import bssend.expreval.compiler.Token;
 
 public class ParseException extends CompileException{
     public ParseException(String message) {
@@ -9,6 +9,10 @@ public class ParseException extends CompileException{
 
     public ParseException(Token token, String message) {
         super(token, message);
+    }
+
+    public ParseException(Token token, Throwable t) {
+        super(token, t);
     }
 
 //    public ParseException() {

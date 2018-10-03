@@ -1,9 +1,7 @@
 package bssend.expreval.exception;
 
-public class EvalException extends ExprevalException {
-    public EvalException() {
-        super();
-    }
+public class EvalException extends RuntimeException {
+
     public EvalException(String message) {
         super(message);
     }

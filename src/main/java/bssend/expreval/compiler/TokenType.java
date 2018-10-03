@@ -1,4 +1,4 @@
-package bssend.expreval.parser;
+package bssend.expreval.compiler;
 
 public enum TokenType {
     STRING(0,"'.+?'") ,
@@ -10,14 +10,14 @@ public enum TokenType {
     TAB(5, "\\t") ,
     OPEN_PAREN(6, "\\(") ,
     CLOSE_PAREN(7, "\\)") ,
-    IDENTIFIER(8, "[a-zA-Z][a-zA-Z0-9]+") ,
+    IDENTIFIER(8, "[a-zA-Z][a-zA-Z0-9]*") ,
     COMMA(9,",") ,
 
     PLUS(10,"\\+") ,
     MINUS(11, "\\-") ,
     STAR(12, "\\*") ,
     SLASH(13, "\\/") ,
-    TILDE(14, "%") ,
+    PERCENT(14, "%") ,
 
     AMPERSAND_AMPERSAND(15, "&&") ,
     PIPE_PIPE(16, "\\|\\|") ,

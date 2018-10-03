@@ -1,4 +1,4 @@
-package bssend.expreval.parser.util;
+package bssend.expreval.compiler.util;
 
 public interface IStringSequence {
     int match(String pattern);

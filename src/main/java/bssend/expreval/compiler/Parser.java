@@ -1,21 +1,20 @@
-package bssend.expreval.parser;
+package bssend.expreval.compiler;
 
-import bssend.expreval.exception.CompileException;
 import bssend.expreval.exception.ParseException;
 import bssend.expreval.node.INode;
 import bssend.expreval.node.binaryexpr.*;
 import bssend.expreval.node.literal.*;
 import bssend.expreval.node.functioncall.FunctionCallNode;
-import bssend.expreval.parser.util.ITokenSequence;
-import bssend.expreval.parser.util.StringSequence;
-import com.google.common.base.Strings;
+import bssend.expreval.compiler.util.ITokenSequence;
+import bssend.expreval.compiler.util.StringSequence;
+import bssend.expreval.node.variable.VariableNode;
 import lombok.NonNull;
 import lombok.var;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static bssend.expreval.parser.TokenType.*;
+import static bssend.expreval.compiler.TokenType.*;
 
 public class Parser implements IParser {
 
@@ -44,24 +43,35 @@ public class Parser implements IParser {
         switch (literalToken.getType()) {
             case STRING:
                 return new StringNode(literalToken);
-//                return LiteralNode.of(
-//                        tokens.next().getContent());
+
             case INTEGER:
-                return new IntNode(literalToken);
-//                return LiteralNode.of(
-//                        Integer.valueOf(tokens.next().getContent()));
+                return new IntegerNode(literalToken);
+
             case NUMBER:
                 return new NumberNode(literalToken);
-//                return LiteralNode.of(
-//                        Double.valueOf(tokens.next().getContent()));
+
             case BOOLEAN:
                 return new BooleanNode(literalToken);
-//                return LiteralNode.of(
-//                        Boolean.valueOf(tokens.next().getContent()));
+
         }
 
-        throw new ParseException(tokens.peek(),
-                "Undefined literal token.");
+        throw new ParseException(literalToken, "Undefined literal token.");
+    }
+
+    /**
+     * variable
+     *      = IDENTIFIER
+     * @param tokens
+     * @return
+     */
+    private INode variableNode(@NonNull final ITokenSequence tokens) {
+
+        if (tokens.isEnd() || tokens.peek().getType() != IDENTIFIER)
+            throw new IllegalArgumentException("first token must be IDENTIFIER.");
+
+        var variableToken = tokens.next();
+
+        return new VariableNode(variableToken);
     }
 
     /**
@@ -82,13 +92,9 @@ public class Parser implements IParser {
                 break;
 
             var operatorToken = tokens.next();
-            //var operator = getBinaryOperator(tokens.next().getType());
             var rightNode = orNode(tokens);
 
-            returnNode = new AndAlsoNode(returnNode , rightNode , operatorToken);
-
-//            returnNode = BinaryExprNode
-//                    .create(returnNode , rightNode , operator);
+            returnNode = new AndAlsoNode(returnNode, rightNode, operatorToken);
         }
 
         return returnNode;
@@ -111,10 +117,9 @@ public class Parser implements IParser {
                 break;
 
             var operatorToken = tokens.next();
-            //var operator = getBinaryOperator(tokens.next().getType());
             var rightNode = compareNode(tokens);
 
-            returnNode = new OrElseNode(returnNode , rightNode , operatorToken);
+            returnNode = new OrElseNode(returnNode, rightNode, operatorToken);
         }
 
         return returnNode;
@@ -142,7 +147,6 @@ public class Parser implements IParser {
                 break;
 
             var opToken = tokens.next();
-//            var operator = getBinaryOperator(tokens.next().getType());
             var rightNode = exprNode(tokens);
 
             switch (opToken.getType()) {
@@ -165,9 +169,6 @@ public class Parser implements IParser {
                     returnNode = new GteNode(returnNode, rightNode, opToken);
                     break;
             }
-//
-//            returnNode = BinaryExprNode
-//                    .create(returnNode , rightNode , operator);
         }
 
         return returnNode;
@@ -192,19 +193,16 @@ public class Parser implements IParser {
                 break;
 
             var operatorToken = tokens.next();
-            //var operator = getBinaryOperator(tokens.next().getType());
             var rightNode = termNode(tokens);
 
             switch (operatorToken.getType()) {
                 case PLUS:
-                    returnNode = new AddNode(returnNode , rightNode , operatorToken);
+                    returnNode = new AddNode(returnNode, rightNode, operatorToken);
                     break;
                 case MINUS:
-                    returnNode = new SubNode(returnNode , rightNode , operatorToken);
+                    returnNode = new SubNode(returnNode, rightNode, operatorToken);
                     break;
             }
-//            returnNode = BinaryExprNode
-//                    .create(returnNode , rightNode , operator);
         }
 
         return returnNode;
@@ -225,12 +223,11 @@ public class Parser implements IParser {
 
         while (!tokens.isEnd()) {
 
-            if (!Arrays.asList(STAR, SLASH, TILDE)
+            if (!Arrays.asList(STAR, SLASH, PERCENT)
                     .contains(tokens.peek().getType()))
                 break;
 
             var operatorToken = tokens.next();
-//            var operator = getBinaryOperator(tokens.next().getType());
             var rightNode = factorNode(tokens);
 
             switch (operatorToken.getType()) {
@@ -240,12 +237,10 @@ public class Parser implements IParser {
                 case SLASH:
                     returnNode = new DivNode(returnNode, rightNode, operatorToken);
                     break;
-                case TILDE:
+                case PERCENT:
                     returnNode = new ModNode(returnNode, rightNode, operatorToken);
                     break;
             }
-//            returnNode = BinaryExprNode
-//                    .create(returnNode , rightNode , operator);
         }
 
         return returnNode;
@@ -255,6 +250,7 @@ public class Parser implements IParser {
     /**
      * factor =
      *     literal |
+     *     variable |
      *     function_call |
      *     [OPEN_PAREN] expr [CLOSE_PAREN]
      * @param tokens
@@ -267,12 +263,17 @@ public class Parser implements IParser {
 
         switch (tokens.peek().getType()) {
             case IDENTIFIER:
-                return functionCallNode(tokens);
+                if (!tokens.isNextEnd() && tokens.peekNext().getType() == OPEN_PAREN)
+                    return functionCallNode(tokens);
+
+                return variableNode(tokens);
+
             case STRING:
             case INTEGER:
             case NUMBER:
             case BOOLEAN:
                 return literalNode(tokens);
+
             case OPEN_PAREN:
                 var openParenToken = tokens.next(); // OPEN_PAREN
 
@@ -293,36 +294,6 @@ public class Parser implements IParser {
                 break;
         }
         throw new IllegalArgumentException(".");
-
-//        // function call
-//        if (tokens.peek().getType() == IDENTIFIER)
-//            return functionCallNode(tokens);
-//
-//        // literal
-//        if (Arrays.asList(STRING, INTEGER, NUMBER, BOOLEAN)
-//                    .contains(tokens.peek().getType()))
-//            return literalNode(tokens);
-//
-//        // factor
-//        if (tokens.next().getType() == OPEN_PAREN) {
-//
-//            var exprNode = exprNode(tokens);
-//
-//            if (tokens.isEnd() || tokens.next().getType() != CLOSE_PAREN)
-//                throw new ExprCompileException("CLOSE_PAREN not found.");
-//
-//            return exprNode;
-//        }
-//
-//        if (tokens.isEnd() || tokens.next().getType() != OPEN_PAREN)
-//            throw new ExprCompileException("OPEN_PAREN not found.");
-//
-//        var exprNode = exprNode(tokens);
-//
-//        if (tokens.isEnd() || tokens.next().getType() != CLOSE_PAREN)
-//            throw new ExprCompileException("CLOSE_PAREN not found.");
-
-//        return exprNode;
     }
 
     /**
@@ -338,7 +309,7 @@ public class Parser implements IParser {
         if (tokens.isEnd() || tokens.peek().getType() != IDENTIFIER)
             throw new IllegalArgumentException("first token must be IDENTIFIER.");
 
-        var functionName = tokens.next().getContent();
+        var functionNameToken = tokens.next();
 
         if (tokens.isEnd() || tokens.next().getType() != OPEN_PAREN)
             throw new ParseException(
@@ -347,6 +318,7 @@ public class Parser implements IParser {
         var arguments = new ArrayList<INode>();
 
         while (!tokens.isEnd() && tokens.peek().getType() != CLOSE_PAREN) {
+
             if (arguments.size() > 0 && tokens.next().getType() != COMMA)
                 throw new ParseException(
                     "COMMA is required to delimit arguments of function call.");
@@ -359,37 +331,6 @@ public class Parser implements IParser {
             throw new ParseException(
                     "CLOSE_PAREN is required at the end of function call.");
 
-        return FunctionCallNode.of(functionName, arguments);
+        return new FunctionCallNode(functionNameToken, arguments);
     }
-
-    private BinaryOperatorType getBinaryOperator(TokenType tokenType) {
-        switch (tokenType) {
-            case PLUS:
-                return BinaryOperatorType.Add;
-            case MINUS:
-                return BinaryOperatorType.Sub;
-            case STAR:
-                return BinaryOperatorType.Mul;
-            case SLASH:
-                return BinaryOperatorType.Div;
-            case TILDE:
-                return BinaryOperatorType.Mod;
-            case EQUAL_EQUAL:
-                return BinaryOperatorType.Eq;
-            case BANG_EQUAL:
-                return BinaryOperatorType.Ne;
-            case OPEN_ANGLE:
-                return BinaryOperatorType.Lt;
-            case OPEN_ANGLE_EQUAL:
-                return BinaryOperatorType.Lte;
-            case CLOSE_ANGLE:
-                return BinaryOperatorType.Gt;
-            case CLOSE_ANGLE_EQUAL:
-                return BinaryOperatorType.Gte;
-            case AMPERSAND_AMPERSAND:
-                return BinaryOperatorType.And;
-            case PIPE_PIPE:
-                return BinaryOperatorType.Or;
-        }
-        throw new IllegalArgumentException("can't convert binary operator.");
-    }}
+}

@@ -1,6 +1,6 @@
 package bssend.expreval.exception;
 
-import bssend.expreval.parser.Token;
+import bssend.expreval.compiler.Token;
 
 public class TypeResolveException extends CompileException {
     public TypeResolveException(String message) {
@@ -10,6 +10,11 @@ public class TypeResolveException extends CompileException {
     public TypeResolveException(Token token, String message) {
         super(token, message);
     }
+
+    public TypeResolveException(Token token, Throwable t) {
+        super(token, t);
+    }
+
 //    public TypeResolveException() {
 //        super();
 //    }

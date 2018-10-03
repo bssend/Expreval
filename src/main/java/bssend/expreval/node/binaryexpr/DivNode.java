@@ -1,66 +1,47 @@
 package bssend.expreval.node.binaryexpr;
 
-import bssend.expreval.exception.EvalException;
-import bssend.expreval.exception.TypeResolveException;
 import bssend.expreval.node.INode;
-import bssend.expreval.parser.Token;
+import bssend.expreval.compiler.Token;
+import bssend.expreval.scope.IScope;
 import bssend.expreval.type.Type;
-import bssend.expreval.value.NumberValue;
-import bssend.expreval.value.IntValue;
-import bssend.expreval.value.InternalValue;
-import bssend.expreval.visitor.EvalVisitor;
-import bssend.expreval.visitor.TypeResolveVisitor;
+import bssend.expreval.value.Value;
+import bssend.expreval.visitor.IEvalVisitor;
+import bssend.expreval.visitor.ITypeResolveVisitor;
 import lombok.val;
 
 import java.math.BigDecimal;
 
-public class DivNode extends BinaryExprNode implements IBinaryExprNode {
+public class DivNode extends ArithmeticExprNode implements IBinaryExprNode {
 
-    public DivNode(final INode left, final INode right, Token operatorToken) {
-        super(left, right, operatorToken);
+    public DivNode(final INode left, final INode right, Token token) {
+        super(left, right, token);
     }
 
     @Override
-    public InternalValue eval(final EvalVisitor visitor) {
-        val v1 = this.getLeft().eval(visitor);
-        val v2 = this.getRight().eval(visitor);
+    public Value eval(final IScope scope, final IEvalVisitor visitor) {
 
-        if (Type.isInt(v1.getType()) && Type.isInt(v2.getType()))
-            return new IntValue(v1.intValue() / v2.intValue());
+        val value1 = this.getLeft().eval(scope, visitor);
+        val value2 = this.getRight().eval(scope, visitor);
 
-        if (Type.isIntOrNumber(v1.getType()) && Type.isIntOrNumber(v2.getType())) {
-            return new NumberValue(
-                    BigDecimal.valueOf(v1.doubleValue())
+        return typeOf(value1, value2)
+                .ifInteger((v1, v2) -> v1 / v2)
+                .ifNumber((v1, v2) ->
+                        BigDecimal.valueOf(v1.doubleValue())
                             .divide(BigDecimal.valueOf(v2.doubleValue()))
-                            .doubleValue());
-        }
-
-        throw new EvalException(
-                String.format("operator is not supported type %s $s",
-                        v1.getType().toString(),
-                        v2.getType().toString()));
+                            .doubleValue())
+                .dispatch();
     }
 
     @Override
-    public Type resolveType(final TypeResolveVisitor visitor) {
-        val t1 = this.getLeft().resolveType(visitor);
-        val t2 = this.getRight().resolveType(visitor);
+    public Type resolveType(final IScope scope, final ITypeResolveVisitor visitor) {
 
-        if (Type.isInt(t1) && Type.isInt(t2)) {
-            this.setType(Type.INT_TYPE);
-            return this.getType();
-        }
+        val t1 = this.getLeft().resolveType(scope, visitor);
+        val t2 = this.getRight().resolveType(scope, visitor);
 
-        if (Type.isIntOrNumber(t1) && Type.isIntOrNumber(t2)) {
-            this.setType(Type.NUMBER_TYPE);
-            return this.getType();
-        }
-
-        throw new TypeResolveException(
-                getOperatorToken(),
-                String.format("operator is not supported type %s $s",
-                        t1.toString(),
-                        t2.toString()));
+        return typeOf(t1, t2)
+                .ifInteger(() -> Type.INTEGER_TYPE)
+                .ifNumber(() -> Type.NUMBER_TYPE)
+                .dispatch();
     }
 
 }

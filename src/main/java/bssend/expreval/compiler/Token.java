@@ -1,4 +1,4 @@
-package bssend.expreval.parser;
+package bssend.expreval.compiler;
 
 import lombok.Builder;
 import lombok.Data;

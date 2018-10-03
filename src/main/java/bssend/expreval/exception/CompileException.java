@@ -1,6 +1,6 @@
 package bssend.expreval.exception;
 
-import bssend.expreval.parser.Token;
+import bssend.expreval.compiler.Token;
 import lombok.Getter;
 
 public class CompileException extends RuntimeException{
@@ -13,6 +13,10 @@ public class CompileException extends RuntimeException{
     }
     public CompileException(Token token, String message) {
         super(message);
+        this.token = token;
+    }
+    public CompileException(Token token, Throwable t) {
+        super(t);
         this.token = token;
     }
 }
