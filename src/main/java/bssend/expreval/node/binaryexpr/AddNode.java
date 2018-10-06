@@ -11,6 +11,7 @@ import bssend.expreval.value.Value;
 import bssend.expreval.visitor.IEvalVisitor;
 import bssend.expreval.visitor.ITypeResolveVisitor;
 import lombok.val;
+import lombok.var;
 
 public class AddNode extends ArithmeticExprNode implements IBinaryExprNode{
 
@@ -21,18 +22,19 @@ public class AddNode extends ArithmeticExprNode implements IBinaryExprNode{
     @Override
     public Value eval(final IScope scope, final IEvalVisitor visitor) {
 
-        val value1 = this.getLeft().eval(scope, visitor);
-        val value2 = this.getRight().eval(scope, visitor);
+        val v1 = this.getLeft().eval(scope, visitor);
+        val v2 = this.getRight().eval(scope, visitor);
 
-        return typeOf(value1, value2)
-                .ifString((v1, v2) ->
-                        new StringValue(v1.stringValue() + v2.stringValue()))
-                .ifInteger((v1, v2) ->
-                        new IntegerValue(v1.intValue() + v2.intValue()))
-                .ifNumber((v1, v2) ->
-                        new NumberValue(v1.doubleValue() + v2.doubleValue()))
-                .dispatch()
-        ;
+        if (Type.isString(v1.getType(), v2.getType()))
+            return StringValue.of(v1.stringValue() + v2.stringValue());
+
+        if (Type.isInteger(v1.getType(), v2.getType()))
+            return IntegerValue.of(v1.intValue() + v2.intValue());
+
+        if (Type.isIntegerOrNumber(v1.getType(), v2.getType()))
+            return NumberValue.of(v1.doubleValue() + v2.doubleValue());
+
+        throw evalError(v1, v2, "+");
     }
 
     @Override
@@ -41,11 +43,16 @@ public class AddNode extends ArithmeticExprNode implements IBinaryExprNode{
         val t1 = this.getLeft().resolveType(scope, visitor);
         val t2 = this.getRight().resolveType(scope, visitor);
 
-        return typeOf(t1, t2)
-                .ifString(() -> Type.STRING_TYPE)
-                .ifInteger(() -> Type.INTEGER_TYPE)
-                .ifNumber(() -> Type.NUMBER_TYPE)
-                .dispatch();
+        if (Type.isString(t1, t2))
+            return Type.STRING_TYPE;
+
+        if (Type.isInteger(t1, t2))
+            return Type.INTEGER_TYPE;
+
+        if (Type.isIntegerOrNumber(t1, t2))
+            return Type.NUMBER_TYPE;
+
+        throw typeResolveError(t1, t2, "+");
     }
 
 }

@@ -22,29 +22,32 @@ public class MulNode extends ArithmeticExprNode implements IBinaryExprNode {
     @Override
     public Value eval(IScope scope, IEvalVisitor visitor) {
 
-        val value1 = this.getLeft().eval(scope, visitor);
-        val value2 = this.getRight().eval(scope, visitor);
+        val v1 = this.getLeft().eval(scope, visitor);
+        val v2 = this.getRight().eval(scope, visitor);
 
-        return typeOf(value1, value2)
-                .ifInteger((v1, v2) ->
-                        new IntegerValue(v1.intValue() * v2.intValue()))
-                .ifNumber((v1, v2) ->
-                        new NumberValue(
-                                BigDecimal.valueOf(v1.doubleValue())
-                                    .multiply(BigDecimal.valueOf(v2.doubleValue()))
-                                    .doubleValue()))
-                .dispatch();
+        if (Type.isInteger(v1.getType(), v2.getType()))
+            return IntegerValue.of(v1.intValue() * v2.intValue());
+
+        if (Type.isIntegerOrNumber(v1.getType(), v2.getType()))
+            return NumberValue.of(BigDecimal.valueOf(v1.doubleValue())
+                    .multiply(BigDecimal.valueOf(v2.doubleValue()))
+                    .doubleValue());
+
+        throw evalError(v1, v2, "*");
     }
 
     @Override
     public Type resolveType(IScope scope, ITypeResolveVisitor visitor) {
 
-        val type1 = this.getLeft().resolveType(scope, visitor);
-        val type2 = this.getRight().resolveType(scope, visitor);
+        val t1 = this.getLeft().resolveType(scope, visitor);
+        val t2 = this.getRight().resolveType(scope, visitor);
 
-        return typeOf(type1, type2)
-                .ifInteger(() -> Type.INTEGER_TYPE)
-                .ifNumber(() -> Type.NUMBER_TYPE)
-                .dispatch();
+        if (Type.isInteger(t1, t2))
+            return Type.INTEGER_TYPE;
+
+        if (Type.isIntegerOrNumber(t1, t2))
+            return Type.NUMBER_TYPE;
+
+        throw typeResolveError(t1, t2, "*");
     }
 }

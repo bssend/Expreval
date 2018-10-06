@@ -5,6 +5,7 @@ import bssend.expreval.compiler.Token;
 import bssend.expreval.scope.IScope;
 import bssend.expreval.type.Type;
 import bssend.expreval.value.BooleanValue;
+import bssend.expreval.value.NumberValue;
 import bssend.expreval.value.Value;
 import bssend.expreval.visitor.IEvalVisitor;
 import bssend.expreval.visitor.ITypeResolveVisitor;
@@ -19,24 +20,24 @@ public class AndAlsoNode extends LogicalExprNode implements IBinaryExprNode {
     @Override
     public Value eval(IScope scope, IEvalVisitor visitor) {
 
-        val value1 = this.getLeft().eval(scope, visitor);
-        val value2 = this.getRight().eval(scope, visitor);
+        val v1 = this.getLeft().eval(scope, visitor);
+        val v2 = this.getRight().eval(scope, visitor);
 
-        return typeOf(value1, value2)
-                .ifBoolean((v1, v2) ->
-                        new BooleanValue(
-                                v1.booleanValue() && v2.booleanValue()))
-                .dispatch();
+        if (Type.isBoolean(v1.getType(), v2.getType()))
+            return BooleanValue.of(v1.booleanValue() && v2.booleanValue());
+
+        throw evalError(v1, v2, "&&");
     }
 
     @Override
     public Type resolveType(IScope scope, ITypeResolveVisitor visitor) {
 
-        val type1 = this.getLeft().resolveType(scope, visitor);
-        val type2 = this.getRight().resolveType(scope, visitor);
+        val t1 = this.getLeft().resolveType(scope, visitor);
+        val t2 = this.getRight().resolveType(scope, visitor);
 
-        return typeOf(type1, type2)
-                .ifBoolean(() -> Type.BOOLEAN_TYPE)
-                .dispatch();
+        if (Type.isBoolean(t1, t2))
+            return Type.BOOLEAN_TYPE;
+
+        throw typeResolveError(t1, t2, "&&");
     }
 }

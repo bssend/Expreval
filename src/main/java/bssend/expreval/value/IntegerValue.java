@@ -41,6 +41,10 @@ public class IntegerValue extends Value {
                         this.getType().toString()));
     }
 
+    public static IntegerValue of(int value) {
+        return new IntegerValue(value);
+    }
+
     public static IntegerValue ofString(String s) {
         return new IntegerValue(Integer.valueOf(s));
     }

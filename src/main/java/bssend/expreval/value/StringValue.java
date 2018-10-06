@@ -43,6 +43,10 @@ public class StringValue extends Value {
                         this.getType().toString()));
     }
 
+    public static StringValue of(String s) {
+        return new StringValue(s);
+    }
+
     public static StringValue ofString(String s) {
         return new StringValue(s);
     }

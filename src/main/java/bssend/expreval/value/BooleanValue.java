@@ -43,6 +43,10 @@ public class BooleanValue extends Value {
         return value;
     }
 
+    public static BooleanValue of(boolean value) {
+        return new BooleanValue(value);
+    }
+
     public static BooleanValue ofString(String s) {
         return new BooleanValue(Boolean.valueOf(s));
     }

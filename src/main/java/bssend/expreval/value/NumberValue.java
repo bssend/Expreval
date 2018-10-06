@@ -41,6 +41,10 @@ public class NumberValue extends Value {
                         this.getType().toString()));
     }
 
+    public static NumberValue of(double value) {
+        return new NumberValue(value);
+    }
+
     public static NumberValue ofString(String s) {
         return new NumberValue(Double.valueOf(s));
     }

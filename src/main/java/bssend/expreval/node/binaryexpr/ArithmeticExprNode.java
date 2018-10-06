@@ -11,12 +11,12 @@ public abstract class ArithmeticExprNode extends BinaryExprNode {
         super(left, right, token);
     }
 
-    protected ArithmeticEvalDispatcher typeOf(Value v1, Value v2) {
-        return new ArithmeticEvalDispatcher(v1, v2);
-    }
-
-    protected TypeResolveDispatcher typeOf(Type t1, Type t2) {
-        return new TypeResolveDispatcher(t1, t2);
-    }
+//    protected ArithmeticEvalDispatcher typeOf(Value v1, Value v2) {
+//        return new ArithmeticEvalDispatcher(v1, v2);
+//    }
+//
+//    protected TypeResolveDispatcher typeOf(Type t1, Type t2) {
+//        return new TypeResolveDispatcher(t1, t2);
+//    }
 
 }

@@ -13,7 +13,7 @@ import lombok.Getter;
 public class NumberNode extends LiteralNode implements ILiteralNode {
 
     public NumberNode(final Token token) {
-        super(new NumberValue(Double.valueOf(token.getContent())), token);
+        super(NumberValue.ofString(token.getContent()), token);
     }
 
     @Override

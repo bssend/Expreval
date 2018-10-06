@@ -19,28 +19,30 @@ public class GteNode extends CompareExprNode implements IBinaryExprNode {
     @Override
     public Value eval(IScope scope, IEvalVisitor visitor) {
 
-        val value1 = this.getLeft().eval(scope, visitor);
-        val value2 = this.getRight().eval(scope, visitor);
+        val v1 = this.getLeft().eval(scope, visitor);
+        val v2 = this.getRight().eval(scope, visitor);
 
-        return typeOf(value1, value2)
-                .ifInteger((v1, v2) ->
-                        new BooleanValue(
-                                v1.intValue() >= v2.intValue()))
-                .ifNumber((v1, v2) ->
-                        new BooleanValue(
-                                v1.doubleValue() >= v2.doubleValue()))
-                .dispatch();
+        if (Type.isInteger(v1.getType(), v2.getType()))
+            return BooleanValue.of(v1.intValue() >= v2.intValue());
+
+        if (Type.isIntegerOrNumber(v1.getType(), v2.getType()))
+            return BooleanValue.of(v1.doubleValue() >= v2.doubleValue());
+
+        throw evalError(v1, v2, ">=");
     }
 
     @Override
     public Type resolveType(IScope scope, ITypeResolveVisitor visitor) {
 
-        val type1 = this.getLeft().resolveType(scope, visitor);
-        val type2 = this.getRight().resolveType(scope, visitor);
+        val t1 = this.getLeft().resolveType(scope, visitor);
+        val t2 = this.getRight().resolveType(scope, visitor);
 
-        return typeOf(type1, type2)
-                .ifInteger(() -> Type.BOOLEAN_TYPE)
-                .ifNumber(() -> Type.BOOLEAN_TYPE)
-                .dispatch();
+        if (Type.isInteger(t1, t2))
+            return Type.BOOLEAN_TYPE;
+
+        if (Type.isIntegerOrNumber(t1, t2))
+            return Type.BOOLEAN_TYPE;
+
+        throw typeResolveError(t1, t2, ">=");
     }
 }

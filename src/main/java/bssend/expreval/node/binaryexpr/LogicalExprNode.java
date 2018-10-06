@@ -11,12 +11,12 @@ public abstract class LogicalExprNode extends BinaryExprNode {
         super(left, right, token);
     }
 
-    protected LogicalEvalDispatcher typeOf(Value v1, Value v2) {
-        return new LogicalEvalDispatcher(v1, v2);
-    }
-
-    protected TypeResolveDispatcher typeOf(Type t1, Type t2) {
-        return new TypeResolveDispatcher(t1, t2);
-    }
+//    protected LogicalEvalDispatcher typeOf(Value v1, Value v2) {
+//        return new LogicalEvalDispatcher(v1, v2);
+//    }
+//
+//    protected TypeResolveDispatcher typeOf(Type t1, Type t2) {
+//        return new TypeResolveDispatcher(t1, t2);
+//    }
 
 }
