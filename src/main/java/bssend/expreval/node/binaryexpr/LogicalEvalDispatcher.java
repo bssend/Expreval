@@ -10,22 +10,21 @@ import java.util.Optional;
 public class LogicalEvalDispatcher {
 
     @FunctionalInterface
-    interface ILogicalOperator<T> {
-        boolean apply(T v1, T v2);
+    interface ILogicalOperator {
+        BooleanValue apply(Value v1, Value v2);
     }
 
     private final Value v1;
     private final Value v2;
 
-    private ILogicalOperator<Boolean> booleanOperator;
+    private ILogicalOperator booleanOperator;
 
     public LogicalEvalDispatcher(Value v1, Value v2) {
         this.v1 = v1;
         this.v2 = v2;
     }
 
-    public LogicalEvalDispatcher ifBoolean(
-            final ILogicalOperator<Boolean> operator) {
+    public LogicalEvalDispatcher ifBoolean(final ILogicalOperator operator) {
         booleanOperator = operator;
         return this;
     }
@@ -38,8 +37,7 @@ public class LogicalEvalDispatcher {
         // If boolean type then dispatch to string operator.
         if (Type.isBoolean(t1, t2)) {
             return Optional.ofNullable(booleanOperator)
-                    .map(op -> new BooleanValue(
-                            op.apply(v1.booleanValue(), v2.booleanValue())))
+                    .map(op -> op.apply(v1, v2))
                     .orElseThrow(() -> error(v1, v2));
         }
 

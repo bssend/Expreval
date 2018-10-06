@@ -4,6 +4,8 @@ import bssend.expreval.node.INode;
 import bssend.expreval.compiler.Token;
 import bssend.expreval.scope.IScope;
 import bssend.expreval.type.Type;
+import bssend.expreval.value.IntegerValue;
+import bssend.expreval.value.NumberValue;
 import bssend.expreval.value.Value;
 import bssend.expreval.visitor.IEvalVisitor;
 import bssend.expreval.visitor.ITypeResolveVisitor;
@@ -24,11 +26,13 @@ public class SubNode extends ArithmeticExprNode implements IBinaryExprNode{
         val value2 = this.getRight().eval(scope, visitor);
 
         return typeOf(value1, value2)
-                .ifInteger((v1, v2) -> v1 - v2)
+                .ifInteger((v1, v2) ->
+                        new IntegerValue(v1.intValue() - v2.intValue()))
                 .ifNumber((v1, v2) ->
-                        BigDecimal.valueOf(v1.doubleValue())
-                                .subtract(BigDecimal.valueOf(v2.doubleValue()))
-                                .doubleValue())
+                        new NumberValue(
+                                BigDecimal.valueOf(v1.doubleValue())
+                                    .subtract(BigDecimal.valueOf(v2.doubleValue()))
+                                    .doubleValue()))
                 .dispatch();
     }
 
@@ -39,10 +43,8 @@ public class SubNode extends ArithmeticExprNode implements IBinaryExprNode{
         val type2 = this.getRight().resolveType(scope, visitor);
 
         return typeOf(type1, type2)
-                .ifInteger(() ->
-                        Type.INTEGER_TYPE)
-                .ifNumber(() ->
-                        Type.NUMBER_TYPE)
+                .ifInteger(() -> Type.INTEGER_TYPE)
+                .ifNumber(() -> Type.NUMBER_TYPE)
                 .dispatch();
     }
 
