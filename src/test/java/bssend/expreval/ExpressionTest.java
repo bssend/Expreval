@@ -1,7 +1,5 @@
 package bssend.expreval;
 
-import bssend.expreval.exception.CompileException;
-import bssend.expreval.exception.FunctionNotFoundException;
 import bssend.expreval.exception.TypeResolveException;
 import bssend.expreval.exception.VariableNotDefinedException;
 import lombok.var;
