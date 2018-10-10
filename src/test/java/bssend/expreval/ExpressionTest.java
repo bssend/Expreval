@@ -597,4 +597,133 @@ public class ExpressionTest {
             });
         }
     }
+
+    @Nested
+    class Not {
+        @Test
+        public void Not_String() throws Exception {
+            assertThrows(TypeResolveException.class, () -> {
+                Expression.builder()
+                        .compile("!'aaa'")
+                        .eval();
+            });
+        }
+
+        @Test
+        public void Not_Integer() throws Exception {
+            assertThrows(TypeResolveException.class, () -> {
+                Expression.builder()
+                        .compile("!123")
+                        .eval();
+            });
+        }
+
+        @Test
+        public void Not_Number() throws Exception {
+            assertThrows(TypeResolveException.class, () -> {
+                Expression.builder()
+                        .compile("!123.456")
+                        .eval();
+            });
+        }
+
+        @Test
+        public void Not_Boolean() throws Exception {
+            var answer = Expression.builder()
+                    .compile("!true")
+                    .eval();
+            assertEquals(answer.value(), false);
+        }
+
+        @Test
+        public void Not_Boolean_2() throws Exception {
+            var answer = Expression.builder()
+                    .compile("!!true")
+                    .eval();
+            assertEquals(answer.value(), true);
+        }
+    }
+
+    @Nested
+    class Plus {
+        @Test
+        public void Plus_String() throws Exception {
+            assertThrows(TypeResolveException.class, () -> {
+                Expression.builder()
+                        .compile("+'aaa'")
+                        .eval();
+            });
+        }
+
+        @Test
+        public void Plus_Integer() throws Exception {
+            var answer = Expression.builder()
+                    .compile("+123")
+                    .eval();
+            assertEquals(answer.value(), 123);
+        }
+
+        @Test
+        public void Plus_Number() throws Exception {
+            var answer = Expression.builder()
+                    .compile("+123.456")
+                    .eval();
+            assertEquals(answer.value(), 123.456);
+        }
+
+        @Test
+        public void Plus_Boolean() throws Exception {
+            assertThrows(TypeResolveException.class, () -> {
+                Expression.builder()
+                        .compile("+true")
+                        .eval();
+            });
+        }
+    }
+
+    @Nested
+    class Minus {
+        @Test
+        public void Plus_String() throws Exception {
+            assertThrows(TypeResolveException.class, () -> {
+                Expression.builder()
+                        .compile("-'aaa'")
+                        .eval();
+            });
+        }
+
+        @Test
+        public void Plus_Integer() throws Exception {
+            var answer = Expression.builder()
+                    .compile("-123")
+                    .eval();
+            assertEquals(answer.value(), -123);
+        }
+
+        @Test
+        public void Plus_Number() throws Exception {
+            var answer = Expression.builder()
+                    .compile("-123.456")
+                    .eval();
+            assertEquals(answer.value(), -123.456);
+        }
+
+        @Test
+        public void Plus_Number_2() throws Exception {
+            var answer = Expression.builder()
+                    .compile("-(-123.456)")
+                    .eval();
+            assertEquals(answer.value(), 123.456);
+        }
+
+        @Test
+        public void Plus_Boolean() throws Exception {
+            assertThrows(TypeResolveException.class, () -> {
+                Expression.builder()
+                        .compile("-true")
+                        .eval();
+            });
+        }
+    }
+
 }

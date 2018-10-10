@@ -1,7 +1,7 @@
 package bssend.expreval.compiler;
 
-import bssend.expreval.node.INode;
+import bssend.expreval.ast.Ast;
 
 public interface IParser {
-    INode parse(final String s);
+    Ast parse(final String s);
 }

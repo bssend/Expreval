@@ -1,13 +1,17 @@
 package bssend.expreval.compiler;
 
+import bssend.expreval.ast.Ast;
 import bssend.expreval.exception.ParseException;
-import bssend.expreval.node.INode;
-import bssend.expreval.node.binaryexpr.*;
-import bssend.expreval.node.literal.*;
-import bssend.expreval.node.functioncall.FunctionCallNode;
+import bssend.expreval.ast.node.IExpressionNode;
+import bssend.expreval.ast.node.binary.*;
+import bssend.expreval.ast.node.literal.*;
+import bssend.expreval.ast.node.functioncall.FunctionCallExpressionNode;
 import bssend.expreval.compiler.util.ITokenSequence;
 import bssend.expreval.compiler.util.StringSequence;
-import bssend.expreval.node.variable.VariableNode;
+import bssend.expreval.ast.node.unary.MinusExpressionNode;
+import bssend.expreval.ast.node.unary.NotExpressionNode;
+import bssend.expreval.ast.node.unary.PlusExpressionNode;
+import bssend.expreval.ast.node.variable.VariableExpressionNode;
 import lombok.NonNull;
 import lombok.var;
 
@@ -23,9 +27,9 @@ public class Parser implements IParser {
     private String source;
 
     @Override
-    public INode parse(@NonNull final String s) {
+    public Ast parse(@NonNull final String s) {
         this.source = s;
-        return andNode(scanner.scan(new StringSequence(s)));
+        return new Ast(andNode(scanner.scan(new StringSequence(s))));
     }
 
     /**
@@ -37,7 +41,7 @@ public class Parser implements IParser {
      * @param tokens
      * @return
      */
-    private INode literalNode(@NonNull final ITokenSequence tokens) {
+    private IExpressionNode literalNode(@NonNull final ITokenSequence tokens) {
 
         var literalToken = tokens.next();
         switch (literalToken.getType()) {
@@ -64,14 +68,38 @@ public class Parser implements IParser {
      * @param tokens
      * @return
      */
-    private INode variableNode(@NonNull final ITokenSequence tokens) {
+    private IExpressionNode variableNode(@NonNull final ITokenSequence tokens) {
 
         if (tokens.isEnd() || tokens.peek().getType() != IDENTIFIER)
             throw new IllegalArgumentException("first token must be IDENTIFIER.");
 
         var variableToken = tokens.next();
 
-        return new VariableNode(variableToken);
+        return new VariableExpressionNode(variableToken);
+    }
+
+    /**
+     * unary
+     * @param tokens
+     * @return
+     */
+    private IExpressionNode unaryNode(@NonNull final ITokenSequence tokens) {
+
+        var operatorToken = tokens.next();
+        var node = exprNode(tokens);
+
+        switch (operatorToken.getType()) {
+            case BANG:
+                return new NotExpressionNode(node, operatorToken);
+
+            case PLUS:
+                return new PlusExpressionNode(node, operatorToken);
+
+            case MINUS:
+                return new MinusExpressionNode(node, operatorToken);
+        }
+
+        throw new ParseException(operatorToken, "Undefined unary expression token.");
     }
 
     /**
@@ -83,7 +111,7 @@ public class Parser implements IParser {
      * @param tokens
      * @return
      */
-    private INode andNode(@NonNull final ITokenSequence tokens) {
+    private IExpressionNode andNode(@NonNull final ITokenSequence tokens) {
         var returnNode = orNode(tokens);
 
         while (!tokens.isEnd()) {
@@ -94,7 +122,7 @@ public class Parser implements IParser {
             var operatorToken = tokens.next();
             var rightNode = orNode(tokens);
 
-            returnNode = new AndAlsoNode(returnNode, rightNode, operatorToken);
+            returnNode = new AndAlsoExpressionNode(returnNode, rightNode, operatorToken);
         }
 
         return returnNode;
@@ -108,7 +136,7 @@ public class Parser implements IParser {
      * @param tokens
      * @return
      */
-    private INode orNode(@NonNull final ITokenSequence tokens) {
+    private IExpressionNode orNode(@NonNull final ITokenSequence tokens) {
         var returnNode = compareNode(tokens);
 
         while (!tokens.isEnd()) {
@@ -119,7 +147,7 @@ public class Parser implements IParser {
             var operatorToken = tokens.next();
             var rightNode = compareNode(tokens);
 
-            returnNode = new OrElseNode(returnNode, rightNode, operatorToken);
+            returnNode = new OrElseExpressionNode(returnNode, rightNode, operatorToken);
         }
 
         return returnNode;
@@ -137,7 +165,7 @@ public class Parser implements IParser {
      * @param tokens
      * @return
      */
-    private INode compareNode(@NonNull final ITokenSequence tokens) {
+    private IExpressionNode compareNode(@NonNull final ITokenSequence tokens) {
         var returnNode = exprNode(tokens);
 
         while (!tokens.isEnd()) {
@@ -151,22 +179,22 @@ public class Parser implements IParser {
 
             switch (opToken.getType()) {
                 case EQUAL_EQUAL:
-                    returnNode = new EqNode(returnNode, rightNode, opToken);
+                    returnNode = new EqualExpressionNode(returnNode, rightNode, opToken);
                     break;
                 case BANG_EQUAL:
-                    returnNode = new NeNode(returnNode, rightNode, opToken);
+                    returnNode = new NotEqualExpressionNode(returnNode, rightNode, opToken);
                     break;
                 case OPEN_ANGLE:
-                    returnNode = new LtNode(returnNode, rightNode, opToken);
+                    returnNode = new LessThanExpressionNode(returnNode, rightNode, opToken);
                     break;
                 case OPEN_ANGLE_EQUAL:
-                    returnNode = new LteNode(returnNode, rightNode, opToken);
+                    returnNode = new LessThanOrEqualExpressionNode(returnNode, rightNode, opToken);
                     break;
                 case CLOSE_ANGLE:
-                    returnNode = new GtNode(returnNode, rightNode, opToken);
+                    returnNode = new GreaterThanExpressionNode(returnNode, rightNode, opToken);
                     break;
                 case CLOSE_ANGLE_EQUAL:
-                    returnNode = new GteNode(returnNode, rightNode, opToken);
+                    returnNode = new GreaterThanOrEqualExpressionNode(returnNode, rightNode, opToken);
                     break;
             }
         }
@@ -183,7 +211,7 @@ public class Parser implements IParser {
      * @param tokens
      * @return
      */
-    private INode exprNode(@NonNull final ITokenSequence tokens) {
+    private IExpressionNode exprNode(@NonNull final ITokenSequence tokens) {
         var returnNode = termNode(tokens);
 
         while (!tokens.isEnd()) {
@@ -197,10 +225,10 @@ public class Parser implements IParser {
 
             switch (operatorToken.getType()) {
                 case PLUS:
-                    returnNode = new AddNode(returnNode, rightNode, operatorToken);
+                    returnNode = new AddExpressionNode(returnNode, rightNode, operatorToken);
                     break;
                 case MINUS:
-                    returnNode = new SubNode(returnNode, rightNode, operatorToken);
+                    returnNode = new SubtractExpressionNode(returnNode, rightNode, operatorToken);
                     break;
             }
         }
@@ -218,7 +246,7 @@ public class Parser implements IParser {
      * @param tokens
      * @return
      */
-    private INode termNode(@NonNull final ITokenSequence tokens) {
+    private IExpressionNode termNode(@NonNull final ITokenSequence tokens) {
         var returnNode = factorNode(tokens);
 
         while (!tokens.isEnd()) {
@@ -232,13 +260,13 @@ public class Parser implements IParser {
 
             switch (operatorToken.getType()) {
                 case STAR:
-                    returnNode = new MulNode(returnNode, rightNode, operatorToken);
+                    returnNode = new MultiplyExpressionNode(returnNode, rightNode, operatorToken);
                     break;
                 case SLASH:
-                    returnNode = new DivNode(returnNode, rightNode, operatorToken);
+                    returnNode = new DivideExpressionNode(returnNode, rightNode, operatorToken);
                     break;
                 case PERCENT:
-                    returnNode = new ModNode(returnNode, rightNode, operatorToken);
+                    returnNode = new ModuloExpressionNode(returnNode, rightNode, operatorToken);
                     break;
             }
         }
@@ -256,12 +284,17 @@ public class Parser implements IParser {
      * @param tokens
      * @return
      */
-    private INode factorNode(@NonNull final ITokenSequence tokens) {
+    private IExpressionNode factorNode(@NonNull final ITokenSequence tokens) {
 
         if (tokens.isEnd())
             throw new IllegalArgumentException("Tokens must not be terminated.");
 
         switch (tokens.peek().getType()) {
+            case BANG:
+            case PLUS:
+            case MINUS:
+                return unaryNode(tokens);
+
             case IDENTIFIER:
                 if (!tokens.isNextEnd() && tokens.peekNext().getType() == OPEN_PAREN)
                     return functionCallNode(tokens);
@@ -304,7 +337,7 @@ public class Parser implements IParser {
      * @param tokens
      * @return
      */
-    private INode functionCallNode(@NonNull final ITokenSequence tokens) {
+    private IExpressionNode functionCallNode(@NonNull final ITokenSequence tokens) {
 
         if (tokens.isEnd() || tokens.peek().getType() != IDENTIFIER)
             throw new IllegalArgumentException("first token must be IDENTIFIER.");
@@ -315,7 +348,7 @@ public class Parser implements IParser {
             throw new ParseException(
                     "OPEN_PAREN is required at the beginning of function call.");
 
-        var arguments = new ArrayList<INode>();
+        var arguments = new ArrayList<IExpressionNode>();
 
         while (!tokens.isEnd() && tokens.peek().getType() != CLOSE_PAREN) {
 
@@ -331,6 +364,6 @@ public class Parser implements IParser {
             throw new ParseException(
                     "CLOSE_PAREN is required at the end of function call.");
 
-        return new FunctionCallNode(functionNameToken, arguments);
+        return new FunctionCallExpressionNode(functionNameToken, arguments);
     }
 }

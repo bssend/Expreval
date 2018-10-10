@@ -2,8 +2,8 @@ package bssend.expreval.compiler;
 
 public enum TokenType {
     STRING(0,"'.+?'") ,
-    NUMBER(1, "-?[0-9]+\\.[0-9]+") ,
-    INTEGER(2,"-?[0-9]+") ,
+    NUMBER(1, "[0-9]+\\.[0-9]+") ,
+    INTEGER(2,"[0-9]+") ,
     BOOLEAN(3,"(true|false)") ,
 
     WHITESPACE(4, "\\s") ,
@@ -13,21 +13,22 @@ public enum TokenType {
     IDENTIFIER(8, "[a-zA-Z][a-zA-Z0-9]*") ,
     COMMA(9,",") ,
 
-    PLUS(10,"\\+") ,
-    MINUS(11, "\\-") ,
-    STAR(12, "\\*") ,
-    SLASH(13, "\\/") ,
-    PERCENT(14, "%") ,
+    AMPERSAND_AMPERSAND(10, "&&") ,
+    PIPE_PIPE(11, "\\|\\|") ,
 
-    AMPERSAND_AMPERSAND(15, "&&") ,
-    PIPE_PIPE(16, "\\|\\|") ,
+    EQUAL_EQUAL(12, "==") ,
+    BANG_EQUAL(13, "!=") ,
+    OPEN_ANGLE_EQUAL(14, "<=") ,
+    OPEN_ANGLE(15, "<") ,
+    CLOSE_ANGLE_EQUAL(16, ">=") ,
+    CLOSE_ANGLE(17, ">") ,
 
-    EQUAL_EQUAL(17, "==") ,
-    BANG_EQUAL(18, "!=") ,
-    OPEN_ANGLE_EQUAL(19, "<=") ,
-    OPEN_ANGLE(20, "<") ,
-    CLOSE_ANGLE_EQUAL(21, ">=") ,
-    CLOSE_ANGLE(22, ">") ;
+    BANG(18, "!") ,
+    PLUS(19,"\\+") ,
+    MINUS(20, "\\-") ,
+    STAR(21, "\\*") ,
+    SLASH(22, "\\/") ,
+    PERCENT(23, "%");
 
     private final String pattern;
     private final int priority;
