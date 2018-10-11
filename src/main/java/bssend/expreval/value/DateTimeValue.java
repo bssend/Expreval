@@ -1,16 +1,17 @@
 package bssend.expreval.value;
 
-import bssend.expreval.type.Type;
 import bssend.expreval.exception.ImplicitCastException;
+import bssend.expreval.type.Type;
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
 
-public class BooleanValue extends Value {
+public class DateTimeValue extends Value {
 
-    private final boolean value;
+    private final ZonedDateTime value;
 
-    public BooleanValue(final boolean value) {
-        super(Type.BOOLEAN_TYPE);
+    public DateTimeValue(final ZonedDateTime value) {
+        super(Type.DATETIME_TYPE);
         this.value = value;
     }
 
@@ -29,34 +30,26 @@ public class BooleanValue extends Value {
     @Override
     public int intValue() {
         throw new ImplicitCastException(
-                String.format("%s to int Implicit cast not supported.",
+                String.format("%s to string Implicit cast not supported.",
                         this.getType().toString()));
     }
 
     @Override
     public double doubleValue() {
         throw new ImplicitCastException(
-                String.format("%s to double Implicit cast not supported.",
+                String.format("%s to string Implicit cast not supported.",
                         this.getType().toString()));
     }
 
     @Override
     public boolean booleanValue() {
-        return value;
+        throw new ImplicitCastException(
+                String.format("%s to string Implicit cast not supported.",
+                        this.getType().toString()));
     }
 
     @Override
     public ZonedDateTime dateTimeValue() {
-        throw new ImplicitCastException(
-                String.format("%s to double Implicit cast not supported.",
-                        this.getType().toString()));
-    }
-
-    public static BooleanValue of(boolean value) {
-        return new BooleanValue(value);
-    }
-
-    public static BooleanValue ofString(String s) {
-        return new BooleanValue(Boolean.valueOf(s));
+        return value;
     }
 }

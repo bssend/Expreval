@@ -4,6 +4,8 @@ import bssend.expreval.exception.EvalException;
 import bssend.expreval.type.Type;
 import lombok.Getter;
 
+import java.time.ZonedDateTime;
+
 @Getter
 public abstract class Value {
 
@@ -27,6 +29,9 @@ public abstract class Value {
         if (Type.isBoolean(t))
             return new BooleanValue((boolean)value);
 
+        if (Type.isDateTime(t))
+            return new DateTimeValue((ZonedDateTime)value);
+
         throw new EvalException("Unreachable statement.");
     }
 
@@ -35,4 +40,5 @@ public abstract class Value {
     public abstract int intValue();
     public abstract double doubleValue();
     public abstract boolean booleanValue();
+    public abstract ZonedDateTime dateTimeValue();
 }

@@ -3,6 +3,8 @@ package bssend.expreval.value;
 import bssend.expreval.type.Type;
 import bssend.expreval.exception.ImplicitCastException;
 
+import java.time.ZonedDateTime;
+
 public class IntegerValue extends Value {
 
     private final int value;
@@ -38,6 +40,13 @@ public class IntegerValue extends Value {
     public boolean booleanValue() {
         throw new ImplicitCastException(
                 String.format("%s to boolean Implicit cast not supported.",
+                        this.getType().toString()));
+    }
+
+    @Override
+    public ZonedDateTime dateTimeValue() {
+        throw new ImplicitCastException(
+                String.format("%s to double Implicit cast not supported.",
                         this.getType().toString()));
     }
 

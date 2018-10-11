@@ -10,7 +10,7 @@ public enum TokenType {
     TAB(5, "\\t") ,
     OPEN_PAREN(6, "\\(") ,
     CLOSE_PAREN(7, "\\)") ,
-    IDENTIFIER(8, "[a-zA-Z][a-zA-Z0-9]*") ,
+    IDENTIFIER(8, "[a-zA-Z_][a-zA-Z0-9_]*") ,
     COMMA(9,",") ,
 
     AMPERSAND_AMPERSAND(10, "&&") ,

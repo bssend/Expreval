@@ -537,6 +537,48 @@ public class ExpressionTest {
                     .eval();
             assertEquals(answer.value(), "boobar");
         }
+
+        @Test
+        public void Date() throws Exception {
+            var answer = Expression.builder()
+                    .compile("date('2013/04/01','yyyy/MM/dd')")
+                    .eval();
+            assertEquals(answer.dateTimeValue().getYear(), 2013);
+        }
+
+        @Test
+        public void Date_With_Timezone() throws Exception {
+            var answer = Expression.builder()
+                    .compile("date('2013/04/01','yyyy/MM/dd', 'Asia/Tokyo')")
+                    .eval();
+
+            assertEquals(answer.dateTimeValue().getYear(), 2013);
+        }
+
+        @Test
+        public void Date_AddYear() throws Exception {
+            var answer = Expression.builder()
+                    .compile("add_years(date('2013/04/01','yyyy/MM/dd'),5)")
+                    .eval();
+            assertEquals(answer.dateTimeValue().getYear(), 2018);
+        }
+
+//        @Test
+//        public void Now() throws Exception {
+//            var answer = Expression.builder()
+//                    .compile("format(now(), 'yyyy-MM-dd HH:mm:ss')")
+//                    .eval();
+//            assertEquals(answer.stringValue(), "2018-10-11 22:16:04");
+//        }
+
+        @Test
+        public void Today() throws Exception {
+            var answer = Expression.builder()
+                    .compile("format(today(), 'yyyy-MM-dd')")
+                    .eval();
+            assertEquals(answer.stringValue(), "2018-10-11");
+        }
+
     }
 
     @Nested

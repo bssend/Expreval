@@ -1,5 +1,6 @@
 package bssend.expreval.type;
 
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -8,6 +9,7 @@ public class Type {
     public final static Type INTEGER_TYPE = new IntegerType();
     public final static Type NUMBER_TYPE = new NumberType();
     public final static Type BOOLEAN_TYPE = new BooleanType();
+    public final static Type DATETIME_TYPE = new DateTimeType();
 
     @Override
     public String toString() {
@@ -46,6 +48,14 @@ public class Type {
         return Arrays.stream(types).allMatch(t -> isBoolean(t));
     }
 
+    public static boolean isDateTime(Type t) {
+        return t instanceof DateTimeType;
+    }
+
+    public static boolean isDateTime(Type... types) {
+        return Arrays.stream(types).allMatch(t -> isDateTime(t));
+    }
+
     public static boolean isMatchJavaType(Type t, Class<?> javaType) {
 
         if (isString(t) && javaType.equals(String.class))
@@ -61,6 +71,9 @@ public class Type {
             return true;
 
         if (isBoolean(t) && javaType.equals(boolean.class))
+            return true;
+
+        if (isDateTime(t) && javaType.equals(ZonedDateTime.class))
             return true;
 
         return false;
@@ -82,6 +95,9 @@ public class Type {
 
         if (javaType.equals(boolean.class))
             return Optional.of(BOOLEAN_TYPE);
+
+        if (javaType.equals(ZonedDateTime.class))
+            return Optional.of(DATETIME_TYPE);
 
         return Optional.empty();
         //throw new RuntimeException("cannot transform.");
