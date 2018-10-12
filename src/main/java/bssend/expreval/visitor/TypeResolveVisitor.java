@@ -1,16 +1,13 @@
 package bssend.expreval.visitor;
 
-import bssend.expreval.ast.Ast;
 import bssend.expreval.ast.node.IExpressionNode;
 import bssend.expreval.compiler.Token;
 import bssend.expreval.exception.EvalException;
-import bssend.expreval.exception.FunctionNotFoundException;
 import bssend.expreval.exception.TypeResolveException;
 import bssend.expreval.exception.VariableNotDefinedException;
 import bssend.expreval.function.FunctionFactory;
 import bssend.expreval.ast.node.binary.*;
 import bssend.expreval.ast.node.literal.*;
-import bssend.expreval.ast.node.unary.IUnaryExpressionNode;
 import bssend.expreval.ast.node.unary.MinusExpressionNode;
 import bssend.expreval.ast.node.unary.NotExpressionNode;
 import bssend.expreval.ast.node.unary.PlusExpressionNode;
@@ -63,25 +60,22 @@ public class TypeResolveVisitor implements ITypeResolveVisitor {
                 .collect(Collectors.toList());
 
         // Resolve function return type.
-        try {
-            val function =
-                    FunctionFactory.create(node.getName(), argTypes);
+        val function =
+                FunctionFactory.find(node.getName(), argTypes)
+                .orElseThrow(() ->
+                        new TypeResolveException(
+                            node.getToken() ,
+                            "Function not found (" + node.getName() + ")"));
 
-            node.setFunction(function);
+        node.setFunction(function);
 
-            var returnType = Type.fromJavaType(function.getReturnType())
-                    .orElseThrow(() ->
-                            new TypeResolveException(
-                                    node.getToken() ,
-                                    "Cannot resolve function return type."));
+//            var returnType = Type.fromJavaType(function.getReturnType())
+//                    .orElseThrow(() ->
+//                            new TypeResolveException(
+//                                    node.getToken() ,
+//                                    "Cannot resolve function return type."));
 
-            return node.setAndGetType(returnType);
-
-        } catch (FunctionNotFoundException ex) {
-            throw new TypeResolveException(
-                    node.getToken() ,
-                    "Function not found (" + node.getName() + ")");
-        }
+        return node.setAndGetType(function.getReturnType());
     }
 
 //    @Override

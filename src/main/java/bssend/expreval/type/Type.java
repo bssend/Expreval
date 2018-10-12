@@ -1,5 +1,7 @@
 package bssend.expreval.type;
 
+import bssend.expreval.value.*;
+
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Optional;
@@ -14,6 +16,14 @@ public class Type {
     @Override
     public String toString() {
         return getClass().getSimpleName();
+    }
+    public static boolean isMatch(Type... types) {
+        return
+            Arrays.stream(types).allMatch(t -> isString(t)) ||
+            Arrays.stream(types).allMatch(t -> isInteger(t)) ||
+            Arrays.stream(types).allMatch(t -> isIntegerOrNumber(t)) ||
+            Arrays.stream(types).allMatch(t -> isBoolean(t)) ||
+            Arrays.stream(types).allMatch(t -> isDateTime(t));
     }
 
     public static boolean isString(Type t) {
@@ -54,6 +64,46 @@ public class Type {
 
     public static boolean isDateTime(Type... types) {
         return Arrays.stream(types).allMatch(t -> isDateTime(t));
+    }
+
+    public static Optional<Type> ofValueClass(Class<?> clazz) {
+
+        if (clazz.equals(StringValue.class))
+            return Optional.of(STRING_TYPE);
+
+        if (clazz.equals(IntegerValue.class))
+            return Optional.of(INTEGER_TYPE);
+
+        if (clazz.equals(NumberValue.class))
+            return Optional.of(NUMBER_TYPE);
+
+        if (clazz.equals(BooleanValue.class))
+            return Optional.of(BOOLEAN_TYPE);
+
+        if (clazz.equals(DateTimeValue.class))
+            return Optional.of(DATETIME_TYPE);
+
+        return Optional.empty();
+    }
+
+    public static Optional<Type> ofClass(Class<? extends Type> clazz) {
+
+        if (clazz.equals(StringType.class))
+            return Optional.of(STRING_TYPE);
+
+        if (clazz.equals(IntegerType.class))
+            return Optional.of(INTEGER_TYPE);
+
+        if (clazz.equals(NumberType.class))
+            return Optional.of(NUMBER_TYPE);
+
+        if (clazz.equals(BooleanType.class))
+            return Optional.of(BOOLEAN_TYPE);
+
+        if (clazz.equals(DateTimeType.class))
+            return Optional.of(DATETIME_TYPE);
+
+        return Optional.empty();
     }
 
     public static boolean isMatchJavaType(Type t, Class<?> javaType) {

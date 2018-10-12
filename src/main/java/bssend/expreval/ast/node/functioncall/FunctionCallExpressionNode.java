@@ -4,6 +4,7 @@ import bssend.expreval.ast.node.ExpressionNode;
 import bssend.expreval.ast.node.IExpressionNode;
 import bssend.expreval.ast.node.NodeType;
 import bssend.expreval.compiler.Token;
+import bssend.expreval.function.FunctionDef;
 import bssend.expreval.scope.IScope;
 import bssend.expreval.type.Type;
 import bssend.expreval.value.*;
@@ -24,7 +25,7 @@ public class FunctionCallExpressionNode extends ExpressionNode implements IFunct
     @Getter
     private final List<IExpressionNode> arguments;
     @Getter @Setter
-    private Method function;
+    private FunctionDef function;
 
     public FunctionCallExpressionNode(Token nameToken, List<IExpressionNode> arguments) {
         super(NodeType.FunctionCall, null);

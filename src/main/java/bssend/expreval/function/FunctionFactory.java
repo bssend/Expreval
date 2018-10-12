@@ -1,63 +1,106 @@
 package bssend.expreval.function;
 
-import bssend.expreval.annotation.Function;
-import bssend.expreval.exception.FunctionNotFoundException;
-import bssend.expreval.type.Type;
+import bssend.expreval.annotation.FunctionName;
+import bssend.expreval.type.*;
+import com.google.common.collect.Streams;
 import lombok.NonNull;
 import lombok.var;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public class FunctionFactory {
 
-    private static Reflections REFRECTIONS
-            = new Reflections("bssend.expreval.function",
-                new MethodAnnotationsScanner());
+//    private static Reflections REFRECTIONS = new Reflections(
+//            "bssend.expreval.function", new MethodAnnotationsScanner());
+//
+    private final static Set<FunctionDef> FUNCTION_DEFS
+            = new LinkedHashSet<FunctionDef>();
 
-    public static Method create(
+    static {
+        FUNCTION_DEFS.addAll(
+                findBuiltInFunctions("bssend.expreval.function"));
+    }
+
+    /**
+     * <pre>
+     * Register function.
+     * </pre>
+     * @param def
+     */
+    public static void register(final FunctionDef def) {
+        FUNCTION_DEFS.add(def);
+    }
+
+    /**
+     * <pre>
+     * Find registered function.
+     * </pre>
+     * @param name
+     * @param argTypes
+     * @return
+     */
+    public static Optional<FunctionDef> find(
             @NonNull final String name,
             @NonNull final List<Type> argTypes) {
 
+        return FUNCTION_DEFS.stream()
+                .filter(def -> def.getName().equals(name))
+                .filter(def -> def.getParameterTypes().size() == argTypes.size())
+                .filter(def -> Streams.zip(
+                        def.getParameterTypes().stream(), argTypes.stream(),
+                            (t1, t2) -> Type.isMatch(t1, t2)).allMatch(b -> b))
+//                .filter(def -> def.getParameterTypes().equals(argTypes))
+                .findFirst()
+        ;
+    }
+
+    /**
+     * <pre>
+     * Find built in functions.
+     * </pre>
+     * @return
+     */
+    private static List<FunctionDef> findBuiltInFunctions(final String packageName) {
+
+        List<FunctionDef> defs = new ArrayList<>();
+
+        Reflections reflections
+                = new Reflections(packageName, new MethodAnnotationsScanner());
+
         Set<Method> methods =
-                REFRECTIONS.getMethodsAnnotatedWith(Function.class);
+                reflections.getMethodsAnnotatedWith(FunctionName.class);
 
-        var candidates = methods.stream()
-                .filter(m -> m.getAnnotation(Function.class).value().equals(name))
-                .collect(Collectors.toList());
+        for (var method : methods) {
+            var def = method.getAnnotation(FunctionName.class);
 
-        if (candidates.size() == 0)
-            throw new FunctionNotFoundException(
-                    "function not found (" + name + ")");
+            try {
+                // Resolve return type.
+                Type returnType = Type.ofValueClass(method.getReturnType())
+                        .orElseThrow(() -> new RuntimeException(""));
 
-        candidates = candidates.stream()
-                .filter(m -> m.getParameterCount() == argTypes.size())
-                .collect(Collectors.toList());
+                // Resolve parameter type.
+                List<Type> paramTypes = new ArrayList<>();
+                for (var clazz : method.getParameterTypes()) {
+                    paramTypes.add(Type.ofValueClass(clazz)
+                            .orElseThrow(() -> new RuntimeException("")));
+                }
 
-        if (candidates.size() == 0)
-            throw new FunctionNotFoundException(
-                    "function parameter count not matched (" + name + ")");
+                // Register function.
+                defs.add(FunctionDef.builder()
+                        .name(def.name())
+                        .returnType(returnType)
+                        .parameterTypes(paramTypes.toArray(new Type[]{}))
+                        .function(method));
 
-        candidates = candidates.stream()
-                .filter(m -> {
-                    for (int i = 0; i < argTypes.size(); i++) {
-                        if (!Type.isMatchJavaType(argTypes.get(i),
-                                m.getParameterTypes()[i]))
-                            return false;
-                    }
-                    return true;
-                })
-                .collect(Collectors.toList());
+            } catch (Exception ex) {
+                //TODO: logging
+                continue;
+            }
+        }
 
-        if (candidates.size() == 0)
-            throw new FunctionNotFoundException(
-                    "function parameter type not matched (" + name + ")");
-
-        return candidates.stream()
-                .findFirst().get();
+        return defs;
     }
 }

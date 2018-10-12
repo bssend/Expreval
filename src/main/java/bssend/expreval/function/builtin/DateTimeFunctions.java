@@ -1,17 +1,29 @@
 package bssend.expreval.function.builtin;
 
-import bssend.expreval.annotation.Function;
+import bssend.expreval.annotation.FunctionName;
+import bssend.expreval.value.DateTimeValue;
+import bssend.expreval.value.IntegerValue;
+import bssend.expreval.value.StringValue;
 import lombok.val;
-import lombok.var;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-import java.util.Locale;
 
 public class DateTimeFunctions {
+
+    private static ZonedDateTime createDateTime(String dateString, String format, ZoneId zoneId)
+            throws ParseException {
+
+        val formatter = new SimpleDateFormat(format);
+        val localDate = LocalDateTime
+                .ofInstant(formatter.parse(dateString).toInstant(), zoneId);
+
+        return ZonedDateTime
+                .ofLocal(localDate, zoneId, null);
+    }
+
     /**
      * <pre>
      * Convert string to date.
@@ -21,16 +33,22 @@ public class DateTimeFunctions {
      * @return
      * @throws ParseException
      */
-    @Function("date")
-    public static ZonedDateTime date(String dateString, String format) throws ParseException {
+//    @FunctionName(
+//            name = "date",
+//            returnType = DateTimeType.class,
+//            parameterTypes = {
+//                    StringType.class ,
+//                    StringType.class
+//            })
+    @FunctionName(name = "date")
+    public static DateTimeValue date(
+            final StringValue dateString, final StringValue format)
+                throws ParseException {
 
         val zoneId = ZoneId.systemDefault();
-        val formatter = new SimpleDateFormat(format);
 
-        val localDate = LocalDateTime.ofInstant(
-                formatter.parse(dateString).toInstant(), zoneId);
-
-        return ZonedDateTime.ofLocal(localDate, zoneId, null);
+        return DateTimeValue.of(createDateTime(
+                dateString.stringValue(), format.stringValue(), zoneId));
     }
 
     /**
@@ -43,16 +61,24 @@ public class DateTimeFunctions {
      * @return
      * @throws ParseException
      */
-    @Function("date")
-    public static ZonedDateTime date(String dateString, String format, String timezone) throws ParseException {
+//    @FunctionName(
+//            name = "date",
+//            returnType = DateTimeType.class,
+//            parameterTypes = {
+//                    StringType.class ,
+//                    StringType.class ,
+//                    StringType.class
+//            })
+    @FunctionName(name = "date")
+    public static DateTimeValue date(
+            final StringValue dateString,
+            final StringValue format,
+            final StringValue timezone) throws ParseException {
 
-        val zoneId = ZoneId.of(timezone);
-        val formatter = new SimpleDateFormat(format);
+        val zoneId = ZoneId.of(timezone.stringValue());
 
-        val localDate = LocalDateTime.ofInstant(
-                formatter.parse(dateString).toInstant(), zoneId);
-
-        return ZonedDateTime.ofLocal(localDate, zoneId, null);
+        return DateTimeValue.of(createDateTime(
+                dateString.stringValue(), format.stringValue(), zoneId));
     }
 
     /**
@@ -63,9 +89,17 @@ public class DateTimeFunctions {
      * @param format
      * @return
      */
-    @Function("format")
-    public static String format(ZonedDateTime date, String format) {
-        return DateTimeFormatter.ofPattern(format).format(date);
+//    @FunctionName(
+//            name = "format",
+//            returnType = StringType.class,
+//            parameterTypes = {
+//                    DateTimeType.class ,
+//                    StringType.class
+//            })
+    @FunctionName(name = "format")
+    public static StringValue format(DateTimeValue date, StringValue format) {
+        val formatter = DateTimeFormatter.ofPattern(format.stringValue());
+        return StringValue.of(formatter.format(date.dateTimeValue()));
     }
 
     /**
@@ -74,9 +108,13 @@ public class DateTimeFunctions {
      * </pre>
      * @return
      */
-    @Function("now")
-    public static ZonedDateTime now() {
-        return ZonedDateTime.now(ZoneId.systemDefault());
+//    @FunctionName(
+//            name = "now",
+//            returnType = DateTimeType.class,
+//            parameterTypes = {})
+    @FunctionName(name = "now")
+    public static DateTimeValue now() {
+        return DateTimeValue.of(ZonedDateTime.now(ZoneId.systemDefault()));
     }
 
     /**
@@ -85,9 +123,15 @@ public class DateTimeFunctions {
      * </pre>
      * @return
      */
-    @Function("now")
-    public static ZonedDateTime now(String timezone) {
-        return ZonedDateTime.now(ZoneId.of(timezone));
+//    @FunctionName(
+//            name = "now",
+//            returnType = DateTimeType.class,
+//            parameterTypes = {
+//                    StringType.class
+//            })
+    @FunctionName(name = "now")
+    public static DateTimeValue now(StringValue timezone) {
+        return DateTimeValue.of(ZonedDateTime.now(ZoneId.of(timezone.stringValue())));
     }
 
     /**
@@ -96,12 +140,16 @@ public class DateTimeFunctions {
      * </pre>
      * @return
      */
-    @Function("today")
-    public static ZonedDateTime today() {
-        return ZonedDateTime.now(ZoneId.systemDefault())
+//    @FunctionName(
+//            name = "today",
+//            returnType = DateTimeType.class,
+//            parameterTypes = {})
+    @FunctionName(name = "today")
+    public static DateTimeValue today() {
+        return DateTimeValue.of(ZonedDateTime.now(ZoneId.systemDefault())
                 .withHour(0)
                 .withMinute(0)
-                .withSecond(0);
+                .withSecond(0));
     }
 
     /**
@@ -110,42 +158,87 @@ public class DateTimeFunctions {
      * </pre>
      * @return
      */
-    @Function("today")
-    public static ZonedDateTime today(String timezone) {
-        return ZonedDateTime.now(ZoneId.of(timezone))
+//    @FunctionName(
+//            name = "today",
+//            returnType = DateTimeType.class,
+//            parameterTypes = {
+//                    StringType.class
+//            })
+    @FunctionName(name = "today")
+    public static DateTimeValue today(StringValue timezone) {
+        return DateTimeValue.of(ZonedDateTime.now(ZoneId.of(timezone.stringValue()))
                 .withHour(0)
                 .withMinute(0)
-                .withSecond(0);
+                .withSecond(0));
     }
 
-    @Function("add_years")
-    public static ZonedDateTime addYears(ZonedDateTime date, int years) throws ParseException {
-        return date.plusYears(years);
+//    @FunctionName(
+//            name = "add_years",
+//            returnType = DateTimeType.class,
+//            parameterTypes = {
+//                    DateTimeType.class,
+//                    IntegerType.class
+//            })
+    @FunctionName(name = "add_years")
+    public static DateTimeValue addYears(DateTimeValue date, IntegerValue years) {
+        return DateTimeValue.of(date.dateTimeValue().plusYears(years.intValue()));
     }
 
-    @Function("add_months")
-    public static ZonedDateTime addMonths(ZonedDateTime date, int months) {
-        return date.plusMonths(months);
+//    @FunctionName(
+//            name = "add_months",
+//            returnType = DateTimeType.class,
+//            parameterTypes = {
+//                    DateTimeType.class,
+//                    IntegerType.class
+//            })
+    @FunctionName(name = "add_months")
+    public static DateTimeValue addMonths(DateTimeValue date, IntegerValue months) {
+        return DateTimeValue.of(date.dateTimeValue().plusMonths(months.intValue()));
     }
 
-    @Function("add_days")
-    public static ZonedDateTime addDays(ZonedDateTime date, int days) {
-        return date.plusDays(days);
+//    @FunctionName(
+//            name = "add_days",
+//            returnType = DateTimeType.class,
+//            parameterTypes = {
+//                    DateTimeType.class,
+//                    IntegerType.class
+//            })
+    @FunctionName(name = "add_days")
+    public static DateTimeValue addDays(DateTimeValue date, IntegerValue days) {
+        return DateTimeValue.of(date.dateTimeValue().plusDays(days.intValue()));
     }
 
-    @Function("add_hours")
-    public static ZonedDateTime addHours(ZonedDateTime date, int hours) {
-        return date.plusHours(hours);
+//    @FunctionName(
+//            name = "add_hours",
+//            returnType = DateTimeType.class,
+//            parameterTypes = {
+//                    DateTimeType.class,
+//                    IntegerType.class
+//            })
+    @FunctionName(name = "add_hours")
+    public static DateTimeValue addHours(DateTimeValue date, IntegerValue hours) {
+        return DateTimeValue.of(date.dateTimeValue().plusHours(hours.intValue()));
     }
 
-    @Function("add_minutes")
-    public static ZonedDateTime addMinutes(ZonedDateTime date, int minutes) {
-        return date.plusMinutes(minutes);
+//    @FunctionName(
+//            name = "add_minutes",
+//            returnType = DateTimeType.class,
+//            parameterTypes = { DateTimeType.class, IntegerType.class })
+    @FunctionName(name = "add_minutes")
+    public static DateTimeValue addMinutes(DateTimeValue date, IntegerValue minutes) {
+        return DateTimeValue.of(
+                date.dateTimeValue().plusMinutes(minutes.intValue()));
     }
 
-    @Function("add_seconds")
-    public static ZonedDateTime addSeconds(ZonedDateTime date, int seconds) {
-        return date.plusSeconds(seconds);
+//    @FunctionName(
+//            name = "add_seconds",
+//            returnType = DateTimeType.class,
+//            parameterTypes = {
+//                    DateTimeType.class,
+//                    IntegerType.class
+//            })
+    @FunctionName(name = "add_seconds")
+    public static DateTimeValue addSeconds(DateTimeValue date, IntegerValue seconds) {
+        return DateTimeValue.of(date.dateTimeValue().plusSeconds(seconds.intValue()));
     }
-
 }

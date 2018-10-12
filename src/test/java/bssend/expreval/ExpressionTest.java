@@ -2,6 +2,10 @@ package bssend.expreval;
 
 import bssend.expreval.exception.TypeResolveException;
 import bssend.expreval.exception.VariableNotDefinedException;
+import bssend.expreval.function.FunctionDef;
+import bssend.expreval.function.FunctionFactory;
+import bssend.expreval.type.Type;
+import bssend.expreval.value.IntegerValue;
 import lombok.var;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -571,12 +575,53 @@ public class ExpressionTest {
 //            assertEquals(answer.stringValue(), "2018-10-11 22:16:04");
 //        }
 
+//        @Test
+//        public void Today() throws Exception {
+//            var answer = Expression.builder()
+//                    .compile("format(today(), 'yyyy-MM-dd')")
+//                    .eval();
+//            assertEquals(answer.stringValue(), "2018-10-11");
+//        }
+
         @Test
-        public void Today() throws Exception {
+        public void CustomFunction() throws Exception {
+
+            FunctionFactory.register(FunctionDef.builder()
+                    .name("conv_m_to_h")
+                    .parameterTypes(Type.NUMBER_TYPE)
+                    .returnType(Type.INTEGER_TYPE)
+                    .function(v -> {
+                        int minute = v.intValue();
+                        return IntegerValue.of(minute / 60);
+                    }));
+
             var answer = Expression.builder()
-                    .compile("format(today(), 'yyyy-MM-dd')")
+                    .compile("conv_m_to_h(240)")
                     .eval();
-            assertEquals(answer.stringValue(), "2018-10-11");
+            assertEquals(answer.intValue(), 4);
+        }
+
+        @Test
+        public void CustomFunction2() throws Exception {
+
+            FunctionFactory.register(FunctionDef.builder()
+                    .name("conv_str_to_min")
+                    .parameterTypes(Type.STRING_TYPE)
+                    .returnType(Type.INTEGER_TYPE)
+                    .function(v -> {
+                        String str = v.stringValue();
+                        String[] hm = str.split(":");
+
+                        int h = Integer.valueOf(hm[0]);
+                        int m = Integer.valueOf(hm[1]);
+
+                        return IntegerValue.of(h * 60 + m);
+                    }));
+
+            var answer = Expression.builder()
+                    .compile("conv_str_to_min('7:30')")
+                    .eval();
+            assertEquals(answer.intValue(), 450);
         }
 
     }

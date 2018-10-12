@@ -1,22 +1,50 @@
 package bssend.expreval.function.builtin;
 
-import bssend.expreval.annotation.Function;
+import bssend.expreval.annotation.FunctionName;
+import bssend.expreval.value.IntegerValue;
+import bssend.expreval.value.StringValue;
 
 public class StringFunctions {
 
-    @Function("replace")
-    public static String replace(String source, String target, String replacement) {
-        return source.replace(target, replacement);
+//    @FunctionName(
+//            name = "replace",
+//            returnType = StringType.class,
+//            parameterTypes = {
+//                StringType.class,
+//                 StringType.class,
+//                 StringType.class})
+    @FunctionName(name = "replace")
+    public static StringValue replace(
+            final StringValue source,
+            final StringValue target,
+            final StringValue replacement) {
+        return StringValue.of(source.stringValue()
+                .replace(target.stringValue(), replacement.stringValue()));
     }
 
-    @Function("substring")
-    public static String substring(String source, int beginIndex) {
-        return source.substring(beginIndex);
+//    @FunctionName(
+//            name = "substring",
+//            returnType = StringType.class,
+//            parameterTypes = {StringType.class, IntegerType.class})
+    @FunctionName(name = "substring")
+    public static StringValue substring(
+            final StringValue source,
+            final IntegerValue beginIndex) {
+        return StringValue.of(source.stringValue()
+                .substring(beginIndex.intValue()));
     }
 
-    @Function("substring")
-    public static String substring(String source, int beginIndex, int endIndex) {
-        return source.substring(beginIndex, endIndex);
+//    @FunctionName(
+//            name = "substring",
+//            returnType = StringType.class,
+//            parameterTypes = {StringType.class, IntegerType.class, IntegerType.class})
+    @FunctionName(name = "substring")
+    public static StringValue substring(
+            final StringValue source,
+            final IntegerValue beginIndex,
+            final IntegerValue endIndex) {
+        return StringValue.of(source.stringValue()
+                .substring(beginIndex.intValue(), endIndex.intValue()));
     }
 
 }

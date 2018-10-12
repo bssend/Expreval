@@ -52,4 +52,8 @@ public class DateTimeValue extends Value {
     public ZonedDateTime dateTimeValue() {
         return value;
     }
+
+    public static DateTimeValue of(ZonedDateTime value) {
+        return new DateTimeValue(value);
+    }
 }

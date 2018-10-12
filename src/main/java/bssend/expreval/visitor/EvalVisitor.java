@@ -56,12 +56,17 @@ public class EvalVisitor implements IEvalVisitor {
                 .collect(Collectors.toList());
 
         try {
-            Object result = node.getFunction().invoke(null,
+            return node.getFunction().call(
                     node.getArguments().stream()
-                            .map(arg -> arg.eval(scope, this).value())
-                            .toArray());
+                            .map(arg -> arg.eval(scope, this))
+                            .collect(Collectors.toList()));
 
-            return Value.ofType(node.getType(), result);
+//            Object result = node.getFunction().invoke(null,
+//                    node.getArguments().stream()
+//                            .map(arg -> arg.eval(scope, this).name())
+//                            .toArray());
+//
+//            return Value.ofType(node.getType(), result);
 
         } catch (Throwable t) {
             throw new RuntimeException(t);
